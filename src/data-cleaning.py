@@ -1,3 +1,4 @@
+import pandas as pd
 # issue_d column can be in two formats. This function will handle the conversion of both formats.
 def convert_date(col_date):
     if col_date[0].isdigit():
@@ -10,10 +11,30 @@ def convert_date(col_date):
         except:
             return pd.to_datetime(col_date, format = '%b-%Y')
 
+def clean_data(df):
+    df['issue_d'] = df['issue_d'].map(convert_date)
+    # Term should be either 36 or 60.
+    df['term'] = [30 if row.strip() == '36 months' else 60 for row in df['term']]
 
+    df['emp_length'] = [0 if row == '< 1 year' else row for row in df['emp_length']]
+    df['emp_length'] = df['emp_length'].str.extract('(\d+)', expand=True).astype(float)
 
-rate_cols = ['int_rate', 'revol_util']
+def memory_management(df):
+    pass
 
-for col in rate_cols:
-    loans[col] = loans[col].str.rstrip('%').astype('float64')
-all_col_names = list(loans.columns)
+def get_percent_of_column_missing(series):
+    num = series.isnull().sum()
+    total = series.count()
+    return 100*(num/total)
+
+def get_cols_missing_data(df):
+    cols = []
+    df_temp = pd.DataFrame(round(df.isnull().sum()/len(df) * 100,2))
+    df_temp = df_temp.rename(columns={0: 'pct_missing'})
+
+    for col in df_temp[df_temp['pct_missing'] > 0].index:
+        cols.append(col)
+
+    return cols
+
+def create_missing_data_boolean_columns(df, cols_missing_data):
