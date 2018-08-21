@@ -37,4 +37,15 @@ def get_cols_missing_data(df):
 
     return cols
 
-def create_missing_data_boolean_columns(df, cols_missing_data):
+def create_missing_data_boolean_columns(df):
+    cols_missing_data = get_cols_missing_data(df)
+    for col in cols_missing_data:
+        df[col+"_missing"] = df[col].isnull().astype('uint8')
+
+    return df
+
+def fill_nas(df, value=-99):
+    for col in df.columns:
+        df[col].fillna(value, inplace=True)
+        
+    return df
