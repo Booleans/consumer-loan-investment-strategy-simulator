@@ -39,3 +39,6 @@ all_cols = ('id', 'member_id', 'loan_amnt', 'funded_amnt', 'funded_amnt_inv', 't
             'settlement_amount', 'settlement_percentage', 'settlement_term')
 
 columns_to_use = [col for col in all_cols if col not in ignore_cols]
+
+uint8_cols = []
+categorical_cols = []
