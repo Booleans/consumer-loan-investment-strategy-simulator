@@ -11,7 +11,7 @@ ignore_cols = ('annual_inc_joint', 'collection_recovery_fee', 'desc', 'funded_am
                'sec_app_fico_range_low', 'sec_app_fico_range_high', 'sec_app_earliest_cr_line', 'sec_app_inq_last_6mths',
                'sec_app_mort_acc', 'sec_app_open_acc', 'sec_app_revol_util', 'sec_app_open_il_6m', 'sec_app_num_rev_accts',
                'sec_app_chargeoff_within_12_mths', 'sec_app_collections_12_mths_ex_med', 'sec_app_mths_since_last_major_derog',
-               'verification_status_joint', 'emp_title', 'dti_joint', 'open_il_6m')
+               'verification_status_joint', 'emp_title', 'dti_joint', 'open_il_6m', 'initial_list_status')
  
 all_cols = ('id', 'member_id', 'loan_amnt', 'funded_amnt', 'funded_amnt_inv', 'term', 'int_rate', 'installment', 'grade',
             'sub_grade', 'emp_title', 'emp_length', 'home_ownership', 'annual_inc', 'verification_status', 'issue_d', 'loan_status',
