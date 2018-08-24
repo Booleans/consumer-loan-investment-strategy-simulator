@@ -1,5 +1,8 @@
 data/LoanStats*.csv
 
+
+__pycache__/
+
 # Jupyter Notebook
 .ipynb_checkpoints
 
