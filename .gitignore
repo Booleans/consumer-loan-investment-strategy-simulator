@@ -2,3 +2,5 @@ data/LoanStats*.csv
 
 # Jupyter Notebook
 .ipynb_checkpoints
+
+data/PMTHIST_INVESTOR_201808.csv
