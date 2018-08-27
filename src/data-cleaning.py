@@ -40,10 +40,19 @@ def only_include_36_month_loans(df):
     df = df[df['term'] == 36]
     return df
 
-def exclude_recent_loans(df, cutoff_date=datetime.date(2015,9,1)):
+def exclude_recent_loans(df, min_age_months):
     '''
+    '''
+    #df = df[df['issue_d'] < cutoff_date]
+    df.drop(labels=['issue_d'], axis=1, inplace=True)
+    return df
 
+def clean_employment_length(df):
     '''
+    '''
+    df['emp_length'] = [0 if row == '< 1 year' else row for row in df['emp_length']]
+    df['emp_length'] = df['emp_length'].str.extract('(\d+)', expand=True).astype('float32')
+    return df
 
 # issue_d column can be in two formats. This function will handle the conversion of both formats.
 def convert_date(col_date):
@@ -64,33 +73,11 @@ def fix_date_cols(df):
     df['last_pymnt_d'] = df['last_pymnt_d'].map(convert_date)
     return df
 
-def memory_management(df):
-    pass
-
-def get_percent_of_column_missing(series):
-    num = series.isnull().sum()
-    total = series.count()
-    return 100*(num/total)
-
-def get_cols_missing_data(df):
-    cols = []
-    df_temp = pd.DataFrame(round(df.isnull().sum()/len(df) * 100,2))
-    df_temp = df_temp.rename(columns={0: 'pct_missing'})
-
-    for col in df_temp[df_temp['pct_missing'] > 0].index:
-        cols.append(col)
-
-    return cols
-
-def create_missing_data_boolean_columns(df):
-    cols_missing_data = get_cols_missing_data(df)
-    for col in cols_missing_data:
-        df[col+"_missing"] = df[col].isnull().astype('uint8')
-
-    return df
-
 def fill_nas(df, value=-99):
     for col in df.columns:
-        df[col].fillna(value, inplace=True)
-        
+        df[col] = df[col].fillna(value)
+
     return df
+
+def memory_management(df):
+    pass
