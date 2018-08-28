@@ -1,6 +1,6 @@
 # Columns we know we can ignore and not load them into the dataframe.
 # Columns are ignored if they provide information not available for new loans.
-ignore_cols = ('annual_inc_joint', 'collection_recovery_fee', 'desc', 'funded_amnt', 'funded_amnt_inv', 'id', 'last_credit_pull_d',
+ignore_cols = ('annual_inc_joint', 'collection_recovery_fee', 'desc', 'funded_amnt', 'funded_amnt_inv', 'last_credit_pull_d',
                'last_fico_range_high', 'last_fico_range_low', 'last_pymnt_amnt', 'last_payment_d', 'member_id', 'next_pymnt_d', 'out_prncp',
                'out_prncp_inv', 'policy_code', 'pymnt_plan', 'recoveries', 'sub_grade', 'title', 'total_pymnt', 'total_payment_inv',
                'total_rec_late_fee', 'url', 'verified_status_joint', 'revol_bal_joint', 'hardship_flag', 'hardship_type', 'hardship_reason',
