@@ -81,3 +81,10 @@ def fill_nas(df, value=-99):
 
 def memory_management(df):
     pass
+
+def drop_unnecessary_cols(df):
+    drop_cols = ('zip_code', 'total_rec_prncp', 'total_rec_int', 'earliest_cr_line', 'year',
+                 'loan_life_months', 'term', 'last_pymnt_d', 'month', 'total_pymnt_inv', 'application_type')
+    for col in drop_cols:
+        df.drop(col, axis=1, inplace=True)
+    return df
