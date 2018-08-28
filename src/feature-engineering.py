@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 from datetime import datetime as dt
 
 def get_percent_of_rows_missing(series):
@@ -31,7 +32,7 @@ def add_issue_date_and_month(df):
     df['month'] = df.issue_d.dt.month.astype('uint8')
     return df
 
-def add_supplemental_interest_rate_data(loans_df):
+def add_supplemental_rate_data(loans_df):
     date_convert = lambda x: dt.strptime(str(x), '%Y-%m-%d')
 
     df_inflation = pd.read_csv('data/inflation_expectations.csv')
@@ -54,8 +55,38 @@ def add_supplemental_interest_rate_data(loans_df):
 
     return loans_df
 
-def create_roi_column(principal_col, int_col, loan_amount_col, n_months_col):
+def create_rate_difference_cols(df):
+    df['int_minus_inflation'] = df['int_rate'] - df['expected_inflation']
+    df['int_minus_mortgage'] = df['int_rate'] - df['us_mortgage_rate']
+    df['int_minus_prime'] = df['int_rate'] - df['prime_rate']
+    return df
+
+def create_months_since_earliest_cl_col(df):
+    df['mths_since_earliest_cr'] = round((df.issue_d - df.earliest_cr_line)/ np.timedelta64(1, 'M'), 0).astype(int)
+    return df
+
+def create_loan_life_months_col(df):
+    df['loan_life_months'] = round((df.last_pymnt_d - df.issue_d )/ np.timedelta64(1, 'M'), 0).astype(int)
+    return df
+
+def create_roi_col(principal_col, int_col, loan_amount_col, n_months_col):
     return (((int_col + principal_col)/loan_amount_col)**(12 / n_months_col) - 1) * 100
+
+def change_data_types(df):
+    float64_cols = list(df.select_dtypes(include=['float64']).columns)
+    for col in float64_cols:
+        df[col] = df[col].astype('float32')
+    
+    categorical_cols = ['term', 'grade', 'home_ownership', 'purpose', 'addr_state', 'verification_status', 'month']
+    for col in categorical_cols:
+        df[col] = df[col].astype('category')
+    
+    uint8_cols = ('delinq_2yrs', 'inq_last_6mths', 'open_acc', 'pub_rec', 'total_acc', 'collections_12_mths_ex_med',
+                  'acc_now_delinq', 'chargeoff_within_12_mths','pub_rec_bankruptcies', 'tax_liens')
+
+    for col in uint8_cols:
+        df[col] = df[col].astype('uint8')
+    return df
 
 def get_state_dummies(col):
     '''
@@ -98,3 +129,22 @@ def get_loan_purpose_dummies(col):
     PURPOSES = ('debt_consolidation', 'credit_card', 'other', 'home_improvement', 'major_purchase', 'small_business', 'medical', 'car', 'vacation',
                 'moving', 'wedding', 'house', 'renewable_energy')
     return pd.DataFrame([{'purpose_' + purpose: int(val==purpose) for purpose in PURPOSES} for val in col])
+
+def create_dummy_cols(df):
+    dummies = get_state_dummies(df['addr_state'])
+    df = pd.concat([df, dummies], axis=1)
+    dummies = get_verification_dummies(df['verification_status'])
+    df = pd.concat([df, dummies], axis=1)
+    dummies = get_grade_dummies(df['grade'])
+    df = pd.concat([df, dummies], axis=1)
+    dummies = get_home_ownership_dummies(df['home_ownership'])
+    df = pd.concat([df, dummies], axis=1)
+    dummies = get_loan_purpose_dummies(df['purpose'])
+    df = pd.concat([df, dummies], axis=1)
+
+    drop_cols = ['grade', 'home_ownership', 'verification_status', 'purpose', 'addr_state']
+
+    for col in drop_cols:
+        df.drop(col, axis=1, inplace=True)
+
+    return df
