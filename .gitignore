@@ -1,5 +1,5 @@
 data/LoanStats*.csv
-
+data/cleaned_payments_data
 
 __pycache__/
 
