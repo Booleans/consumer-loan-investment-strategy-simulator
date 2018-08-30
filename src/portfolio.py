@@ -1,10 +1,11 @@
 from dateutil.relativedelta import relativedelta
 
 class Loan:
-    def __init__(self, loan_id, loan_size):
+    def __init__(self, loan_id, borrowed_amount, investment_amount):
             self.id = loan_id
-            self.size = loan_size
-            self.principal_balance = 0
+            self.size = borrowed_amount
+            self.initial_investment = min(investment_amount, borrowed_amount)
+            self.principal_balance = min(investment_amount, borrowed_amount)
             self.status = 'Current'
             self.months_since_last_payment = 0
     
@@ -12,8 +13,8 @@ class Loan:
         self.status = 'Default'
         self.principal_balance = 0
 
-    def update_principal_balance(self, overall_principal):
-        self.principal_balance = (self.investment_amount / self.size) * overall_principal
+    def update_investment_principal_balance(self, overall_principal):
+        self.principal_balance = (self.initial_investment / self.size) * overall_principal
 
 class Portfolio:
     def __init__(self, starting_balance, investment_per_loan, start_date, min_roi=5.0):
@@ -28,12 +29,6 @@ class Portfolio:
     def update_invested_principal_balance(self):
         self.invested_principal_balance = sum([loan.principal_balance for loan in self.active_loans])
 
-    def buy_loan(self, loan):
-        self.active_loans.append(loan)
-
-    def get_payments_for_current_month(self):
-        pass
-
     def increment_date_by_one_month(self):
         self.date += relativedelta(months=1)
 
@@ -45,14 +40,14 @@ class Portfolio:
         loans = []
         rows = df.to_dict(orient='records')
         for row in rows:
-            loans.append(Loan(row['id'], row['loan_amnt']))
+            loans.append(Loan(row['id'], row['loan_amnt'], self.investment_per_loan))
         return loans
 
     def get_loans_available_for_given_date(self, loans_df):
         '''
         date parameter needs to be of type datetime.date
         '''
-        return loans_df[(loans_df['issue_d'].dt.year == date.year) & (loans_df['issue_d'].dt.month == date.month)]
+        return loans_df[(loans_df['issue_d'].dt.year == self.date.year) & (loans_df['issue_d'].dt.month == self.date.month)]
 
     def get_top_n_loans_to_buy(self, loans, n):
         loans.sort_values(by='predicted_roi', ascending=False, inplace=True)
@@ -67,10 +62,9 @@ class Portfolio:
         '''
         return payments_df[(payments_df['RECEIVED_D'].dt.year == date.year) & (payments_df['RECEIVED_D'].dt.month == date.month)]
 
+    def get_top_n_loans_to_buy(loans, n):
+        loans.sort_values(by='predicted_roi', ascending=False, inplace=True)
+        return loans.head(n)
 
-def get_top_n_loans_to_buy(loans, n):
-    loans.sort_values(by='predicted_roi', ascending=False, inplace=True)
-    return loans.head(n)
-
-def add():
-    pass
+    def add():
+        pass
