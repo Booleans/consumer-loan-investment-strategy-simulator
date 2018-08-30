@@ -18,4 +18,9 @@ def get_training_and_testing_data(df, split_date='2015-09-01'):
 def train_model(model, X_train, y_train):
     fit_model = model.fit(X_train, y_train)
     return fit_model
-    
+
+def get_predictions(fit_model, X):
+    return fit_model.predict(X)
+
+def create_dataframe_for_simulation():
+    pass
