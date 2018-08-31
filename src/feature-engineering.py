@@ -148,3 +148,24 @@ def create_dummy_cols(df):
         df.drop(col, axis=1, inplace=True)
 
     return df
+
+def get_one_loan_payment_data(payments, loan_id):
+    return payments[payments['LOAN_ID'] == loan_id]
+
+def calculative_npv_payments(payments_row, month_row, r_guess):
+    return sum(payments_row/(1+r_guess)**(month_row/12))
+
+def adjust_estimated_roi(roi_guess, roi_min, roi_max, npv):
+    if npv > 0:
+        new_guess = (roi_guess + roi_min)/2
+        new_min = roi_min
+        new_max = roi_guess
+    elif npv < 0:
+        new_guess = (roi_guess + roi_max)/2
+        new_min = roi_guess
+        new_max = roi_max
+    else:
+        return roi_guess
+    
+    return (new_guess, new_min, new_max)
+    
