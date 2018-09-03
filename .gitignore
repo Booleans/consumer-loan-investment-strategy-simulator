@@ -1,6 +1,7 @@
 data/LoanStats*.csv
 data/cleaned_payments_data*
 data/predictions*
+data/raw_dataframe*
 
 __pycache__/
 

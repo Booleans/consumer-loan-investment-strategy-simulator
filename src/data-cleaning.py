@@ -19,7 +19,7 @@ def drop_loan_status(df):
     return df
 
 def drop_joint_applicant_loans(df):
-    df = df[df['application_type'] == "INDIVIDUAL"]
+    df = df[df['application_type'].str.upper() == "INDIVIDUAL"]
     return df
 
 def fix_rate_cols(df):
