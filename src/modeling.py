@@ -2,7 +2,7 @@
 import pandas as pd
 
 def split_data_into_labels_and_target(df):
-    X = df.drop(['roi', 'issue_d', 'id'], axis=1)
+    X = df.drop(['roi', 'issue_d'], axis=1)
     y = df['roi']
     return X, y
 
@@ -22,5 +22,7 @@ def train_model(model, X_train, y_train):
 def get_predictions(fit_model, X):
     return fit_model.predict(X)
 
-def create_dataframe_for_simulation():
-    pass
+def create_dataframe_for_simulation(loan_df, predictions):
+    simulation_df = loan_df.copy(deep=True)
+    simulation_df['predicted_roi'] = predictions
+    return simulation_df[['issue_d', 'loan_amnt', 'predicted_roi']]
