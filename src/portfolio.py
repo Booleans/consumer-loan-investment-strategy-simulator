@@ -75,15 +75,26 @@ class Portfolio:
         
     def get_payments_for_current_month(self):
         active_loan_ids = [loan.id for loan in self.active_loans]
-        latest_payments = self.all_payments_data.loc[self.date].loc[active_loan_ids].dropna()
+        #latest_payments = self.all_payments_data.loc[self.date].loc[active_loan_ids,:].dropna()
+        apfd = self.all_payments_data.loc[self.date]
+        latest_payments = apfd.loc[apfd.index.isin(active_loan_ids),:]
         return latest_payments
     
     def apply_payments(self, payments_for_month):
         for loan in self.active_loans:
             if loan.id in payments_for_month.index:
-                total_payment = payments_for_month.loc[loan.id].RECEIVED_AMT_INVESTORS
-                self.update_portfolio_cash_balance(loan.fractional_investment * total_payment)
-                end_principal_total = payments_for_month.loc[loan.id].PBAL_END_PERIOD_INVESTORS
+                total_payments = 0
+                end_principal_total = 0
+                try:
+                    # In case we have more than 1 payment per month
+                    #total_payment = sum(payments_for_month.loc[loan.id].RECEIVED_AMT_INVESTORS)
+                    total_payments = payments_for_month.loc[loan.id, 'RECEIVED_AMT_INVESTORS'].sum()
+                    end_principal_total = min(payments_for_month.loc[loan.id].PBAL_END_PERIOD_INVESTORS)
+                except:
+                    total_payments = payments_for_month.loc[loan.id].RECEIVED_AMT_INVESTORS
+                    end_principal_total = payments_for_month.loc[loan.id].PBAL_END_PERIOD_INVESTORS
+                    
+                self.update_portfolio_cash_balance(loan.fractional_investment * total_payments)
                 loan.update_investment_principal_balance(end_principal_total)
                 loan.months_since_last_payment = 0
                 
