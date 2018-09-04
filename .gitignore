@@ -7,5 +7,5 @@ __pycache__/
 
 # Jupyter Notebook
 .ipynb_checkpoints
-
+data/*.pkl.bz2
 data/PMTHIST_INVESTOR_201808.csv
