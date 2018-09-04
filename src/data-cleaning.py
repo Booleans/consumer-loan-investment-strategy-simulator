@@ -67,6 +67,7 @@ def convert_date(col_date):
             return pd.to_datetime(col_date, format = '%b-%Y')
 
 def fix_date_cols(df):
+    df.dropna(subset=['issue_d'], inplace=True)
     df['issue_d'] = df['issue_d'].map(convert_date)
     df['earliest_cr_line'] = df['earliest_cr_line'].map(convert_date)
     df.dropna(subset=['last_pymnt_d'], inplace = True)
