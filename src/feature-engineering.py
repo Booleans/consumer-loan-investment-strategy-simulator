@@ -47,11 +47,9 @@ def add_supplemental_rate_data(loans_df):
     supplemental_dfs = (df_inflation, df_mortgage, df_prime)
 
     for df in supplemental_dfs:
-        df['date'] = df['date'].apply(date_convert)
-        df['year'] = df.date.dt.year
-        df['month'] = df.date.dt.month
+        df['issue_d'] = df['date'].apply(date_convert)
         df.drop(columns='date', inplace=True)
-        loans_df = pd.merge(loans_df, df, on=('year', 'month'))
+        loans_df = pd.merge(loans_df, df, on=('issue_d'))
 
     return loans_df
 
