@@ -97,28 +97,28 @@ def get_state_dummies(col):
               "NJ", "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI",
               "SC", "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI",
               "WY")
-    return pd.DataFrame([{'state_' + state: int(val==state) for state in STATES} for val in col])
+    return pd.DataFrame([{'state_' + state: int(val==state) for state in STATES} for val in col], index=col.index)
 
 def get_verification_dummies(col):
     '''
     Return a dataframe of dummy columns, one for each state.
     '''
     VERIFICATIONS = ('Not Verified', 'Source Verified', 'Verified')
-    return pd.DataFrame([{'is_' + status: int(val==status) for status in VERIFICATIONS} for val in col])
+    return pd.DataFrame([{'is_' + status: int(val==status) for status in VERIFICATIONS} for val in col], index=col.index)
 
 def get_grade_dummies(col):
     '''
     Return a dataframe of dummy columns, one for each state.
     '''
     GRADES = ('A', 'B', 'C', 'D', 'E', 'F', 'G')
-    return pd.DataFrame([{'grade_' + grade: int(val==grade) for grade in GRADES} for val in col])
+    return pd.DataFrame([{'grade_' + grade: int(val==grade) for grade in GRADES} for val in col], index=col.index)
 
 def get_home_ownership_dummies(col):
     '''
     Return a dataframe of dummy columns, one for each state.
     '''
     STATUS = ('RENT', 'MORTGAGE', 'OWN')
-    return pd.DataFrame([{'home_' + status: int(val==status) for status in STATUS} for val in col])
+    return pd.DataFrame([{'home_' + status: int(val==status) for status in STATUS} for val in col], index=col.index)
 
 def get_loan_purpose_dummies(col):
     '''
@@ -126,7 +126,7 @@ def get_loan_purpose_dummies(col):
     '''
     PURPOSES = ('debt_consolidation', 'credit_card', 'other', 'home_improvement', 'major_purchase', 'small_business', 'medical', 'car', 'vacation',
                 'moving', 'wedding', 'house', 'renewable_energy')
-    return pd.DataFrame([{'purpose_' + purpose: int(val==purpose) for purpose in PURPOSES} for val in col])
+    return pd.DataFrame([{'purpose_' + purpose: int(val==purpose) for purpose in PURPOSES} for val in col], index=col.index)
 
 def create_dummy_cols(df):
     dummies = get_state_dummies(df['addr_state'])
