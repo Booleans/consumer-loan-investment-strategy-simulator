@@ -75,7 +75,7 @@ def change_data_types(df):
     for col in float64_cols:
         df[col] = df[col].astype('float32')
     
-    categorical_cols = ['term', 'grade', 'home_ownership', 'purpose', 'addr_state', 'verification_status', 'month']
+    categorical_cols = ['term', 'grade', 'home_ownership', 'purpose', 'addr_state', 'verification_status']
     for col in categorical_cols:
         df[col] = df[col].astype('category')
     

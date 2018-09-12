@@ -84,8 +84,12 @@ def memory_management(df):
     pass
 
 def drop_unnecessary_cols(df):
-    drop_cols = ('zip_code', 'total_rec_prncp', 'total_rec_int', 'earliest_cr_line', 'year',
-                 'loan_life_months', 'term', 'last_pymnt_d', 'month', 'total_pymnt_inv', 'application_type')
+    drop_cols = ('zip_code', 'total_rec_prncp', 'total_rec_int', 'earliest_cr_line', 'term',
+                 'last_pymnt_d', 'total_pymnt_inv', 'application_type')
     for col in drop_cols:
         df.drop(col, axis=1, inplace=True)
     return df
+
+def exclude_loans_before_2010(df):
+    loans_2010_and_later = df[df['issue_d'] >= '2010-01-01']
+    return loans_2010_and_later
