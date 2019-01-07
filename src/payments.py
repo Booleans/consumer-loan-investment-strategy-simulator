@@ -24,3 +24,7 @@ def get_cleaned_payment_history_data(raw_payments_df):
     df['PBAL_END_PERIOD_INVESTORS'] = df['PBAL_END_PERIOD_INVESTORS'].astype('float32')
     df = set_and_sort_indices(df)
     return df
+
+def get_relevant_payments(all_payments, loan_ids_from_training_set):
+    cols = ['RECEIVED_AMT_INVESTORS', 'mths_since_issue']
+    return all_payments.loc[pd.IndexSlice[:, loan_ids_from_training_set], :][cols]
