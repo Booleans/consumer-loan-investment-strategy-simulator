@@ -217,9 +217,10 @@ def drop_unnecessary_cols(df):
 
 def exclude_loans_before_2010(df):
     '''
-    Drop all loans issued before 2010. This is to remove the effect of the great recession. 
+    Drop all loans issued before 2010. This is to remove the effect of the "great recession". 
 
-    Todo: Should this be done? My model isn't designed to predict and prepare for black swan events. 
+    Todo: Should this be done? My model isn't designed to predict and prepare for black swan events.
+          Users are understanding of this fact.
     '''
     loans_2010_and_later = df[df['issue_d'] >= '2010-01-01']
     return loans_2010_and_later
