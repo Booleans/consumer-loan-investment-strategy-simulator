@@ -1,6 +1,3 @@
-# PLEASE NOTE: Work in Progress
-## Check back in a few days for a completed repository with explanatory Jupyter notebook.
-
 # Consumer Loan Investment Strategy Simulator
 
 Building a model to predict return on investment (ROI) of consumer loans issued through the company Lending Club. Predictions are used to simulate a historical investment portfolio and analyze performance of the model.
