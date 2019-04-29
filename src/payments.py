@@ -57,24 +57,42 @@ def get_relevant_payments(all_payments, loan_ids_from_training_set):
     cols = ['RECEIVED_AMT_INVESTORS', 'mths_since_issue']
     return all_payments.loc[pd.IndexSlice[:, loan_ids_from_training_set], :][cols]
 
-def get_one_loan_payment_data(payments, loan_id):
+def get_one_loan_payment_data(payments_training_loans, loan_id):
     '''
     Function to extract payments made by a single loan ID. 
 
     Args:
-        payments (dataframe): The dataframe containing all loan payments data.
+        payments_training_loans (dataframe): The dataframe containing all loan payments data for our training loans.
+            Only training loans are relevant since ROI needs to be calculated as our label to use in model training.
         loan_id (int): The loan ID that we want to get payments for.
 
     Returns:
         DataFrame: Returns a dataframe containing payment history for a single loan.
 
-    Todo:
-        Shouldn't we be accessing the payments data frame with .loc[loan_id]? 
+    Todo: Add in description of the format the payments_training_loans dataframe should be in.
     '''
-    return payments[payments['LOAN_ID'] == loan_id]
+    try:
+        return payments_training_loans.loc[loan_id]
+    except:
+        return pd.DataFrame()
 
-def calculative_npv_payments(payments_row, month_row, r_guess):
-    return sum(payments_row/(1+r_guess)**(month_row/12))
+def calculative_npv_payments(loan_payments, r_guess):
+    '''
+    Function that takes in payments made for a loan and returns the net present value of the payments, given an
+    estimated rate for return on investment and how many months into the loan the payment was made.
+
+    Args:
+        loan_payments (dataframe): Dataframe containing the payments made for the given loan. This dataframe
+            comes with 2 columns, the dollar amount received by investors and the months since the loan was issued
+            at the time of that payment.
+        r_guess (float): Current guess of loan's ROI. For example, 13.5% would have r_guess=.135. 
+
+    Returns:
+        float: Returns the dollar value of the NPV given the current guess at the loan's ROI. 
+    '''
+    payments = loan_payments.RECEIVED_AMT_INVESTORS
+    months = loan_payments.mths_since_issue
+    return sum(payments/(1+r_guess)**(months/12))
 
 def adjust_estimated_roi(roi_guess, roi_min, roi_max, npv):
     if npv > 0:
