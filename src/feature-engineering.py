@@ -3,11 +3,30 @@ import numpy as np
 from datetime import datetime as dt
 
 def get_percent_of_rows_missing(series):
+    '''
+    Given a pandas Series, return the percent of the series that is null.
+
+    Args:
+        series (pandas series): One column of a dataframe.
+
+    Returns:
+        float: Returns 100 times the percentage of rows in a series that are null.
+               1357 missing rows out of 10,000 is returned as 13.57.
+    '''
     num = series.isnull().sum()
     total = series.count()
     return 100*(num/total)
 
 def get_cols_missing_data(df):
+    '''
+    Given a dataframe, return the names of the columns with missing data. 
+
+    Args:
+        df (dataframe): The dataframe containing information on the loans.
+
+    Returns:
+        list: List of names of the columns that contain any null data.
+    '''
     cols_with_missing_data = []
     df_temp = pd.DataFrame(round(df.isnull().sum()/len(df) * 100,2))
     df_temp = df_temp.rename(columns={0: 'pct_missing'})
@@ -35,8 +54,6 @@ def add_issue_date_and_month(df):
 def add_supplemental_rate_data(loans_df):
     date_convert = lambda x: dt.strptime(str(x), '%Y-%m-%d')
 
-    df_inflation = pd.read_csv('data/inflation_expectations.csv')
-    df_inflation.rename(columns={'DATE':'date', 'MICH':'expected_inflation'}, inplace=True)
     df_inflation = pd.read_csv('data/inflation_expectations.csv')
     df_inflation.rename(columns={'DATE':'date', 'MICH':'expected_inflation'}, inplace=True)
     df_mortgage = pd.read_csv('data/MORTGAGE30US.csv')
@@ -67,15 +84,12 @@ def create_loan_life_months_col(df):
     df['loan_life_months'] = round((df.last_pymnt_d - df.issue_d )/ np.timedelta64(1, 'M'), 0).astype(int)
     return df
 
-def create_roi_col(principal_col, int_col, loan_amount_col, n_months_col):
-    return (((int_col + principal_col)/loan_amount_col)**(12 / n_months_col) - 1) * 100
-
 def change_data_types(df):
     float64_cols = list(df.select_dtypes(include=['float64']).columns)
     for col in float64_cols:
         df[col] = df[col].astype('float32')
     
-    categorical_cols = ['term', 'grade', 'home_ownership', 'purpose', 'addr_state', 'verification_status']
+    categorical_cols = ('term', 'grade', 'home_ownership', 'purpose', 'addr_state', 'verification_status')
     for col in categorical_cols:
         df[col] = df[col].astype('category')
     
@@ -86,49 +100,100 @@ def change_data_types(df):
         df[col] = df[col].astype('uint8')
     return df
 
-def get_state_dummies(col):
+def get_state_dummies(state_col):
     '''
-    Return a dataframe of dummy columns, one for each state.
-    '''
-    # States includes DC
-    STATES = ("AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DC", "DE", "FL",
-              "GA", "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME",
-              "MD", "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH",
-              "NJ", "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI",
-              "SC", "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI",
-              "WY")
-    return pd.DataFrame([{'state_' + state: int(val==state) for state in STATES} for val in col], index=col.index)
+    Create dummy columns for each US state.
 
-def get_verification_dummies(col):
+    Args:
+        state_col (dataframe column): The column from our loan dataframe that contains the state the borrower lives in.
+
+    Returns:
+        DataFrame: Returns a dataframe containing 51 columns that represent dummy boolean variables for the state a borrower
+            lives in. For example, a row containing a loan issued in Michigan, "MI", will be returned in this dataframe as a row
+            that has a value of 1 in the column 'state_MI' and a 0 in all other state columns.
     '''
-    Return a dataframe of dummy columns, one for each state.
+    # Washington DC is included in STATES.
+    STATES = ('AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DC', 'DE', 'FL',
+              'GA', 'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME',
+              'MD', 'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH',
+              'NJ', 'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI',
+              'SC', 'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI',
+              'WY')
+    return pd.DataFrame([{'state_' + state: int(val==state) for state in STATES} for val in state_col], index=state_col.index)
+
+def get_verification_dummies(verification_col):
+    '''
+    Create dummy columns for each type of loan verification status.
+
+    Args:
+        verification_col (dataframe column): The column from our loan dataframe that contains the loan's verification status.
+
+    Returns:
+        DataFrame: Returns a dataframe containing 3 columns that represent dummy boolean variables for the loan's
+            verification status.
     '''
     VERIFICATIONS = ('Not Verified', 'Source Verified', 'Verified')
-    return pd.DataFrame([{'is_' + status: int(val==status) for status in VERIFICATIONS} for val in col], index=col.index)
+    return pd.DataFrame([{'is_' + status: int(val==status) for status in VERIFICATIONS} for val in verification_col],
+     index=verification_col.index)
 
-def get_grade_dummies(col):
+def get_grade_dummies(grade_col):
     '''
-    Return a dataframe of dummy columns, one for each state.
+    Create dummy columns for the types of loan grades assigned by Lending Club. Lending Club assigns a grade to each loan,
+    with 'A' being the least risky and 'G' being the most risky.
+
+    Args:
+        grade_col (dataframe column): The column from our loan dataframe that contains the grade of all loans.
+
+    Returns:
+        DataFrame: Returns a dataframe containing 7 columns that represent dummy boolean variables for the grade that
+            Lending Club has assigned to the loan.
     '''
     GRADES = ('A', 'B', 'C', 'D', 'E', 'F', 'G')
-    return pd.DataFrame([{'grade_' + grade: int(val==grade) for grade in GRADES} for val in col], index=col.index)
+    return pd.DataFrame([{'grade_' + grade: int(val==grade) for grade in GRADES} for val in grade_col], index=grade_col.index)
 
-def get_home_ownership_dummies(col):
+def get_home_ownership_dummies(home_col):
     '''
-    Return a dataframe of dummy columns, one for each state.
+    Create dummy columns for the possible home ownership status of the borrower.
+
+    Args:
+        home_col (dataframe column): The column from our loan dataframe that contains the borrower's home ownership status.
+
+    Returns:
+        DataFrame: Returns a dataframe containing 3 columns that represent dummy boolean variables for the home ownership
+            status of the borrower.
     '''
     STATUS = ('RENT', 'MORTGAGE', 'OWN')
-    return pd.DataFrame([{'home_' + status: int(val==status) for status in STATUS} for val in col], index=col.index)
+    return pd.DataFrame([{'home_' + status: int(val==status) for status in STATUS} for val in home_col], index=home_col.index)
 
-def get_loan_purpose_dummies(col):
+def get_loan_purpose_dummies(purpose_col):
     '''
-    Return a dataframe of dummy columns, one for each loan purpose.
+    Create dummy columns for the stated purpose of each loan. It should be notied that loan purpose is supplied by
+    the borrower and not necessarily verified.
+
+    Args:
+        purpose_col (dataframe column): The column from our loan dataframe that contains the loan's stated purpose.
+
+    Returns:
+        DataFrame: Returns a dataframe containing 13 columns that represent dummy boolean variables for the stated purpose
+            of the loan.
     '''
-    PURPOSES = ('debt_consolidation', 'credit_card', 'other', 'home_improvement', 'major_purchase', 'small_business', 'medical', 'car', 'vacation',
-                'moving', 'wedding', 'house', 'renewable_energy')
-    return pd.DataFrame([{'purpose_' + purpose: int(val==purpose) for purpose in PURPOSES} for val in col], index=col.index)
+    PURPOSES = ('debt_consolidation', 'credit_card', 'other', 'home_improvement', 'major_purchase', 'small_business',
+                'medical', 'car', 'vacation', 'moving', 'wedding', 'house', 'renewable_energy')
+    return pd.DataFrame([{'purpose_' + purpose: int(val==purpose) for purpose in PURPOSES} for val in purpose_col],
+     index=purpose_col.index)
 
 def create_dummy_cols(df):
+    '''
+    Function that chains together all of the previous functions related to create dummy variable columns. This
+    function applies all those changes sequentially to generate an updated dataframe containing the dummy columns.
+
+    Args:
+        df (dataframe): Our loan data dataframe. 
+
+    Returns:
+        DataFrame: Returns a dataframe with dummy columns added in, and the original columns dropped. For example,
+        the column 'addr_state' is dropped after the state dummy columns have been added. 
+    '''
     dummies = get_state_dummies(df['addr_state'])
     df = pd.concat([df, dummies], axis=1)
     dummies = get_verification_dummies(df['verification_status'])
