@@ -256,7 +256,7 @@ def drop_unnecessary_cols(df):
         df (dataframe): Dataframe of loans.
 
     Returns:
-        Dataframe with desired columns removed.
+        Dataframe: Returns the input dataframe with desired columns removed.
     '''
     drop_cols = ('zip_code', 'total_rec_prncp', 'total_rec_int', 'earliest_cr_line', 'term',
                  'last_pymnt_d', 'total_pymnt_inv', 'application_type')
@@ -268,8 +268,52 @@ def exclude_loans_before_2010(df):
     '''
     Drop all loans issued before 2010. This is to remove the effect of the "great recession". 
 
-    Todo: Should this be done? My model isn't designed to predict and prepare for black swan events.
-          Users are understanding of this fact.
+    Args:
+        df (dataframe): Dataframe of loans.
+
+    Returns:
+        Dataframe: Dataframe that only includes loans issued in January 2010 or later. 
+
+    TODO: Should this be done? My model isn't designed to predict and prepare for black swan events.
+          Users are understanding of this fact. Let's evaluate the models both with and without loans before 2010.
     '''
     mask = df['issue_d'] >= '2010-01-01'
     return df.loc[mask, :]
+
+def clean_and_prepare_raw_data_for_model(df):
+    '''
+    Take in the raw dataframe containing all loan data and run through all functions required to prepare it for model training.
+
+    Args:
+        df (dataframe): Dataframe of loans.
+
+    Returns:
+        Dataframe: Returns the loan dataframe after all the data cleaning and feature engineering functions have been applied.
+
+    TODO:
+        This function currently relies on functions stored in feature-engineering.py. This is acceptable for working in the
+        Jupyter notebook I have but I need to change the organization of my code later on.
+    '''
+    df = drop_loan_status(df)
+    df = drop_joint_applicant_loans(df)
+    df = fix_rate_cols(df)
+    df.dropna(subset=['issue_d'], inplace=True)
+    df = fix_date_cols(df)
+    df.sort_values(by='issue_d', inplace=True)
+    df = exclude_loans_before_2010(df)
+    df = clean_loan_term_col(df)
+    df = only_include_36_month_loans(df)
+    df = clean_employment_length(df)
+    # I doubt we need missing data boolean columns for tree models.
+    df = create_missing_data_boolean_columns(df)
+    df = fill_nas(df, value=-99)
+    #df = add_issue_date_and_month(df) # Ditch this?
+    df = add_supplemental_rate_data(df)
+    df = create_rate_difference_cols(df)
+    df = create_months_since_earliest_cl_col(df)
+    #df = create_loan_life_months_col(df)
+    df = change_data_types(df)
+    df = create_dummy_cols(df)
+    df = drop_unnecessary_cols(df)
+    
+    return df

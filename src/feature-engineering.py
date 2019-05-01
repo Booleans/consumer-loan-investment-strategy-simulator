@@ -52,6 +52,10 @@ def add_issue_date_and_month(df):
     return df
 
 def add_supplemental_rate_data(loans_df):
+    '''
+    TODO: 
+        I'd rather perform a vectorized operation instead of doing .apply(date_convert).
+    '''
     date_convert = lambda x: dt.strptime(str(x), '%Y-%m-%d')
 
     df_inflation = pd.read_csv('data/inflation_expectations.csv')
