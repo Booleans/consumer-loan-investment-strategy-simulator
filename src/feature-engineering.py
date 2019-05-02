@@ -36,25 +36,82 @@ def get_cols_missing_data(df):
     return cols_with_missing_data
 
 def create_missing_data_boolean_columns(df):
+    '''
+    Given a dataframe, create boolean columns to signify missing data. For example, if a column called 'purpose' had
+    missing data, this function would add a column called 'purpose_missing' with a value of 1 for rows where the 'purpose'
+    column is missing data.
+
+    Args:
+        df (dataframe): The dataframe containing information on the loans.
+
+    Returns:
+        Dataframe: Returns the input dataframe with columns added for all rows that contained missing data.
+    '''
     cols_missing_data = get_cols_missing_data(df)
     for col in cols_missing_data:
         df[col+"_missing"] = df[col].isnull().astype('uint8')
     return df
 
 def fill_nas(df, value=-99):
+    '''
+    Fill in missing data with the value pass into this function.
+
+    Args:
+        df (dataframe): The dataframe containing information on the loans.
+        value (int or float): The numeric value to replace NaN values.
+
+    Returns:
+        Dataframe: Returns the input dataframe with missing values replaced.
+    '''
     for col in df.columns:
         df[col] = df[col].fillna(value)
     return df
 
 def add_issue_date_and_month(df):
+    '''
+    Take in the loan dataframe and based off the issue date column, create 2 new columns to indicate issue year and month.
+    The original purpose of these extra columns were to make grouping and plotting easier but I'm not sure if it's
+    necessary at this point in time.
+
+    Args:
+        df (dataframe): The dataframe containing information on the loans.
+
+    Returns:
+        Dataframe: Returns the input dataframe with 2 new columns to indicate the year and month each loan was issued.
+    '''
     df['year'] = df.issue_d.dt.year
     df['month'] = df.issue_d.dt.month.astype('uint8')
     return df
 
 def add_supplemental_rate_data(loans_df):
     '''
-    TODO: 
+    Function that adds additional columns based on supplemental interest rate data taken from the Federal Reserve Economic Database.
+    The point of this is to reflect the fact that interest rates do not exist in a vacuum. For example, in today's current
+    economy a mortgage rate of 10% would be a high burden to bear. A mortgage rate of 10% in 1980 would essentially be free money
+    when you consider inflation was over 13% that year. 
+
+    This function currently reads in 3 interest rate files stored in the data folder of the repository.
+
+    data/inflation_expectations.csv: The expected annual inflation rate. 
+    data/MORTGAGE30US.csv:           Average interest rate for a 30 year fixed mortgage. 
+    data/MPRIME.csv:                 The prime interest rate.
+
+    The files can be found at the following URLs and should be downloaded with the frequency set to monthly.
+
+    MPRIME.csv: https://fred.stlouisfed.org/series/MPRIME
+    MORTGAGE30US.csv: https://fred.stlouisfed.org/series/MORTGAGE30US
+    inflation_expectations.csv: https://fred.stlouisfed.org/series/MICH
+
+    Args:
+        loans_df (dataframe): The dataframe containing information on the loans.
+
+    Returns:
+        Dataframe: Returns the input dataframe with 3 new columns for the expected inflation rate, mortgage rate, and
+        prime rate. 
+
+    TODO:
         I'd rather perform a vectorized operation instead of doing .apply(date_convert).
+        I need to just pull this data from the FRED API instead of manually downloading new files every month.
     '''
     date_convert = lambda x: dt.strptime(str(x), '%Y-%m-%d')
 
@@ -75,20 +132,65 @@ def add_supplemental_rate_data(loans_df):
     return loans_df
 
 def create_rate_difference_cols(df):
+    '''
+    Take in the loan dataframe and create 3 new columns where we take the difference between the loan's interest rate
+    and the supplemental data added in from the Federal Reserve Economic Database in the add_supplemental_rate_data
+    function.
+
+    Args:
+        df (dataframe): The dataframe containing information on the loans.
+
+    Returns:
+        Dataframe: Returns the input dataframe with 3 new columns where we've calculated the difference between the loan's
+        interest rate and the expected inflation rate, US 30 year fixed mortgage rate, and prime bank rate. 
+    '''
     df['int_minus_inflation'] = df['int_rate'] - df['expected_inflation']
     df['int_minus_mortgage'] = df['int_rate'] - df['us_mortgage_rate']
     df['int_minus_prime'] = df['int_rate'] - df['prime_rate']
     return df
 
 def create_months_since_earliest_cl_col(df):
+    '''
+    Engineer a new feature where we calculate how many months it's been since the borrower first had a credit line.
+    The hope is that this feature may provide useful information.
+
+    Args:
+        df (dataframe): The dataframe containing information on the loans.
+
+    Returns:
+        Dataframe: Returns the input dataframe with a new column added for how many months it's been since the borrower opened
+        their first line of credit.
+    '''
     df['mths_since_earliest_cr'] = round((df.issue_d - df.earliest_cr_line)/ np.timedelta64(1, 'M'), 0).astype(int)
     return df
 
 def create_loan_life_months_col(df):
+    '''
+    Engineer a new feature where we calculate how many months went by between a loan's last payment date and the date the loan
+    was issued. The purpose of this function was to look at defaulted loans to see how long they lasted before defaulting.
+
+    Args:
+        df (dataframe): The dataframe containing information on the loans.
+
+    Returns:
+        Dataframe: Returns the input dataframe with a new column added for how many months passed between a loan's issue date
+        and the last date a payment was made on that loan.
+    '''
     df['loan_life_months'] = round((df.last_pymnt_d - df.issue_d )/ np.timedelta64(1, 'M'), 0).astype(int)
     return df
 
 def change_data_types(df):
+    '''
+    This feature was written to reduce the memory size of the dataframe by changing some columns to the correct data types.
+    Float64 columns can be Float32, many columns are categorical, and some columns can be uint8. This should be done before
+    pickling the raw dataframe to save online. 
+
+    Args:
+        df (dataframe): The dataframe containing information on the loans.
+
+    Returns:
+        Dataframe: Returns the dataframe with certain columns having their dtype changed.
+    '''
     float64_cols = list(df.select_dtypes(include=['float64']).columns)
     for col in float64_cols:
         df[col] = df[col].astype('float32')
