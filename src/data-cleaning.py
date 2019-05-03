@@ -35,7 +35,7 @@ def load_loan_data_from_local_machine(csv_files, columns, number_of_rows=None):
         loan_data.append(data)
     loans = pd.concat(loan_data)
     # Loan IDs are unique and we can access specific loans much faster by setting them as the index.
-    loans.set_index('id', inplace=True)
+    #loans.set_index('id', inplace=True)
     return loans
 
 def load_loan_data_from_s3(csv_files, columns, number_of_rows=None, bucket='loan-analysis-data'):
@@ -76,7 +76,7 @@ def load_loan_data_from_s3(csv_files, columns, number_of_rows=None, bucket='loan
         loan_data.append(data)
     loans = pd.concat(loan_data)
     # Loan IDs are unique and we can access specific loans much faster by setting them as the index.
-    loans.set_index('id', inplace=True)
+    #loans.set_index('id', inplace=True)
     return loans
 
 def drop_loans_not_complete(df):
@@ -315,5 +315,6 @@ def clean_and_prepare_raw_data_for_model(df):
     df = change_data_types(df)
     df = create_dummy_cols(df)
     df = drop_unnecessary_cols(df)
-    
+    df.set_index('id', inplace=True)
+
     return df
