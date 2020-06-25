@@ -2,6 +2,7 @@ import pandas as pd
 from datetime import datetime as dt
 from io import BytesIO
 import boto3
+from src.feature_engineering import *
 
 def load_loan_data_from_local_machine(csv_files, columns, number_of_rows=None):
     '''

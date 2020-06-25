@@ -182,7 +182,7 @@ def create_loan_life_months_col(df):
 def change_data_types(df):
     '''
     This feature was written to reduce the memory size of the dataframe by changing some columns to the correct data types.
-    Float64 columns can be Float32, many columns are categorical, and some columns can be uint8. This should be done before
+    float64 columns can be float32, many columns are categorical, and some columns can be uint8. This should be done before
     pickling the raw dataframe to save online. 
 
     Args:
@@ -225,7 +225,7 @@ def get_state_dummies(state_col):
               'NJ', 'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI',
               'SC', 'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI',
               'WY')
-    return pd.DataFrame([{'state_' + state: int(val==state) for state in STATES} for val in state_col], index=state_col.index)
+    return pd.DataFrame([{'state_' + state: int(val == state) for state in STATES} for val in state_col], index=state_col.index)
 
 def get_verification_dummies(verification_col):
     '''
@@ -239,7 +239,7 @@ def get_verification_dummies(verification_col):
             verification status.
     '''
     VERIFICATIONS = ('Not Verified', 'Source Verified', 'Verified')
-    return pd.DataFrame([{'is_' + status: int(val==status) for status in VERIFICATIONS} for val in verification_col],
+    return pd.DataFrame([{'is_' + status: int(val == status) for status in VERIFICATIONS} for val in verification_col],
      index=verification_col.index)
 
 def get_grade_dummies(grade_col):
@@ -255,7 +255,7 @@ def get_grade_dummies(grade_col):
             Lending Club has assigned to the loan.
     '''
     GRADES = ('A', 'B', 'C', 'D', 'E', 'F', 'G')
-    return pd.DataFrame([{'grade_' + grade: int(val==grade) for grade in GRADES} for val in grade_col], index=grade_col.index)
+    return pd.DataFrame([{'grade_' + grade: int(val == grade) for grade in GRADES} for val in grade_col], index=grade_col.index)
 
 def get_home_ownership_dummies(home_col):
     '''

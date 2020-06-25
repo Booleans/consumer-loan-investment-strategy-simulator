@@ -15,7 +15,7 @@ def load_data_from_s3(filename, format='csv'):
         df = pd.read_pickle(f, compression='bz2')
     return df
     
-def load_raw_data_froms3(filename, format='csv'):
+def load_raw_data_from_s3(filename, format='csv'):
     s3 = boto3.client('s3')
     obj = s3.get_object(Bucket='loan-analysis-data', Key=filename)
     data = obj['Body'].read()
