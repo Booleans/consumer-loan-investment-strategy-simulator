@@ -30,7 +30,7 @@ def load_loan_data_from_local_machine(csv_files, columns, number_of_rows=None):
     '''
     loan_data = []
     for filename in csv_files:    
-        data = pd.read_csv('data/' + filename, header=1, low_memory=False, na_values='n/a',
+        data = pd.read_csv(f'data/{filename}', header=1, low_memory=False, na_values='n/a',
                            usecols=columns, nrows=number_of_rows) 
         loan_data.append(data)
     loans = pd.concat(loan_data)
