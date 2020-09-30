@@ -72,7 +72,8 @@ if __name__ == '__main__':
     df_payments = read_dataframe_from_s3('df_payments_training_loans.pkl.bz2')
     loan_rois = read_pickle_from_s3('loan_rois.pickle')
     # We can skip loans that have already been processed.
-    unprocessed_ids = {loan_id for loan_id in training_loan_ids if loan_id not in loan_rois}
+    unprocessed_ids = {loan_id for loan_id in training_loan_ids if loan_id not in loan_rois and loan_id in loan_amounts}
+    print(len(unprocessed_ids))
     num_cpus = mp.cpu_count()
     print(f'Number of CPUs: {num_cpus}')
     pool = mp.Pool(processes=num_cpus)
@@ -84,4 +85,5 @@ if __name__ == '__main__':
     pickle_byte_obj = pickle.dumps(loan_rois) 
     s3_resource = boto3.resource('s3')
     s3_resource.Object(bucket, key).put(Body=pickle_byte_obj)
+    print('Done!')
     stop_EC2_instance('i-05c63d902d7d04e7b')
