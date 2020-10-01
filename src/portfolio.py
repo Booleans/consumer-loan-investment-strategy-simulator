@@ -51,33 +51,42 @@ class Portfolio:
             loans.append(Loan(row['id'], row['loan_amnt'], self.investment_per_loan))
         return loans
 
-    def get_loans_available_for_current_date(self, loans_df):
+    def get_loans_available_for_current_date(self):
         '''
-        date parameter needs to be of type datetime.date
+        TODO: The date parameter used to need to be of type datetime.date but now I have to cast it to string.
+              Figure out why.
         '''
-        return self.all_loans_available.loc[self.date]
+        available_loans = self.all_loans_available.loc[str(self.date)]
+        # Setting the dataframe index to loan id makes it easier to search and retrieve loans later.
+        #available_loans.set_index('id', inplace=True)
+        return available_loans
     
-    def get_loans_over_required_roi_threshold(self, df):
-        return df[df['predicted_roi'] >= self.min_roi]
+    def get_loans_over_required_roi_threshold(self, loans):
+        return loans.loc[loans['predicted_roi'] >= self.min_roi, :]
 
     def get_top_loans_to_buy(self, loans):
         # We want to take as many loans as we can from the top predicted roi.
-        n = int(self.cash_balance // self.investment_per_loan)
+        num_loans = int(self.cash_balance // self.investment_per_loan)
         sorted_loans = loans.sort_values(by='predicted_roi', ascending=False)
-        return sorted_loans.head(n)
+        return sorted_loans.iloc[0:num_loans, :]
     
     def buy_loans_for_current_month(self):
-        loans = self.get_loans_available_for_current_date(self.all_loans_available)
+        loans = self.get_loans_available_for_current_date()
         loans = self.get_loans_over_required_roi_threshold(loans)
         loans_to_buy = self.get_top_loans_to_buy(loans)
         loan_objects = self.convert_df_rows_to_loans(loans_to_buy)
         self.purchase_loans(loan_objects)
         
     def get_payments_for_current_month(self):
-        active_loan_ids = [loan.id for loan in self.active_loans]
-        #latest_payments = self.all_payments_data.loc[self.date].loc[active_loan_ids,:].dropna()
-        apfd = self.all_payments_data.loc[self.date]
-        latest_payments = apfd.loc[apfd.index.isin(active_loan_ids),:]
+        payments_this_month = self.all_payments_data.loc[str(self.date)]
+        return payments_this_month
+    
+    def get_payments_from_active_loans(self, payments_this_month):
+        active_loan_ids = (loan.id for loan in self.active_loans)
+        latest_payments = payments_this_month.loc[payments_this_month.index.get_level_values(1).isin(active_loan_ids), :]
+        # Let's get rid of the date from the index and just make it loan ID for easier lookup.
+        if len(latest_payments) > 0:
+            latest_payments = latest_payments.reset_index(1).set_index('LOAN_ID')
         return latest_payments
     
     def apply_payments(self, payments_for_month):
@@ -85,9 +94,9 @@ class Portfolio:
             if loan.id in payments_for_month.index:
                 total_payments = 0
                 end_principal_total = 0
+                # TODO: Just check the length of the loan's payments instead of using try/except.
                 try:
-                    # In case we have more than 1 payment per month
-                    #total_payment = sum(payments_for_month.loc[loan.id].RECEIVED_AMT_INVESTORS)
+                    # In case we have more than 1 payment per month.
                     total_payments = payments_for_month.loc[loan.id, 'RECEIVED_AMT_INVESTORS'].sum()
                     end_principal_total = min(payments_for_month.loc[loan.id].PBAL_END_PERIOD_INVESTORS)
                 except:
@@ -99,8 +108,9 @@ class Portfolio:
                 loan.months_since_last_payment = 0
                 
     def get_and_apply_payments_for_current_month(self):
-        payments = self.get_payments_for_current_month()
-        self.apply_payments(payments)
+        payments_this_month = self.get_payments_for_current_month()
+        payments_from_active_loans = self.get_payments_from_active_loans(payments_this_month)
+        self.apply_payments(payments_from_active_loans)
                 
     def update_portfolio_cash_balance(self, payment):
         self.cash_balance += payment
