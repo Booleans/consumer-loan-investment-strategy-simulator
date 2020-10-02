@@ -1,17 +1,20 @@
 # Social Capital
 ### Predicting the Return on Investment (ROI) of Crowd-Funded Loans
 
-The stock market has it's purpose, but wouldn't you enjoy investing your money in real people? That is the goal of crowd-funded loans issued by [LendingClub](https://www.lendingclub.com/). Here's how it works:
-
-Bob comes to Lending Club with $20,000 in credit card debt. He's paying an interest rate of 40% on this debt. However, Lending Club's non-traditional credit model decides Bob can be loaned money at 15% instead. Lending Club offers Bob a $20,000 loan to pay off his credit card debt. However, this loan is not funded by the company itself. This loan will be crowd-funded by investors.
-
-Investors on the Lending Club platform can "invest" to fund Bob's loan. You invest by funding a portion of the loan, and then you receive payments as Bob pays off the loan. However, if Bob defaults on his loan you can lose out on your money.
-
-This scenario is a win for both Bob and the investors. Bob gets to pay off his debt at a lower interest rate, saving thousands in interest payments and penalties. Investors win by earning a (hopefully) significant return on their investments and are able to diversify their portfolios by adding a new asset class, consumer loans.
-
-Investors don't want to lose money though, so can we train a machine learning algorithm to predict the return on investment of a LendingClub loan?
 
 ![Models](img/model_comparison.png)
+
+The stock market has it's purpose, but wouldn't you enjoy investing your money in real people? That is the goal of crowd-funded loans issued by [LendingClub](https://www.lendingclub.com/). Here's how it works:
+
+> Bob comes to Lending Club with $20,000 in credit card debt. He's paying an interest rate of 40% on this debt. However, Lending Club's non-traditional credit model decides Bob can be loaned money at 15% instead. Lending Club offers Bob a $20,000 loan to pay off his credit card debt. However, this loan is not funded by the company itself. This loan will be crowd-funded by investors.
+
+Investors on the Lending Club platform can "invest" to fund Bob's loan. You invest by funding a portion of the loan, and then you receive payments as Bob pays off the loan. However, if Bob defaults on his loan you lose your portion of the unpaid balance.
+
+This scenario is a win for both Bob and the investors. Bob gets to pay off his debt at a lower interest rate, saving thousands in interest payments and penalties. Investors win by (hopefully) earning a significant return on their investment.
+
+Investors don't want to lose money though, so can we train a machine learning algorithm to predict the return on investment of a LendingClub loan? This will allow us to avoid loans that are going to offer low or negative returns. 
+
+Eventually I will host my trained model as an API and use AWS Lambda jobs to automatically choose loans to invest my money in.
 
 ## Explanatory Notebooks
 
