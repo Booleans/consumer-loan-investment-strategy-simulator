@@ -64,7 +64,9 @@ def fill_nas(df, value=-99):
         Dataframe: Returns the input dataframe with missing values replaced.
     '''
     for col in df.columns:
-        df[col] = df[col].fillna(value)
+        # The ROI column is the label for our models. We don't want to fill in missing values.
+        if col != 'roi':
+            df[col] = df[col].fillna(value)
     return df
 
 def add_issue_date_and_month(df):
