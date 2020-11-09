@@ -137,3 +137,28 @@ class Portfolio:
         self.update_invested_principal_balance()
         self.update_portfolio_total_balance()
         self.increment_date_by_one_month()
+
+def get_annualized_roi(dates, balances):
+    num_months = len(dates)
+    starting_balance = balances[0]
+    ending_balance = balances[-1]
+    profit = ending_balance - starting_balance
+    return 100 * (((1+(profit/starting_balance))**(1/num_months))**12 - 1)
+
+def simulate_loan_investment_portfolio(all_payments, model_predictions, start_date, end_date, starting_balance, investment_per_loan, min_roi):
+    # To speed up the simulation we can look at just the payments from loans matching our minimum ROI criteria. 
+    loans_meeting_min_roi = model_predictions.loc[model_predictions['predicted_roi'] >= min_roi, 'id']
+    payments_filtered = all_payments.loc[payments.index.get_level_values(1).isin(loans_meeting_min_roi), ['RECEIVED_AMT_INVESTORS', 'PBAL_END_PERIOD_INVESTORS', 'IssuedDate']]
+    
+    dates = []
+    balances = []
+    
+    portfolio = Portfolio(starting_balance, investment_per_loan, start_date, model_predictions, payments_filtered, min_roi)
+    while portfolio.date < end_date:
+        dates.append(portfolio.date)
+        balances.append(portfolio.total_balance)
+        portfolio.simulate_month()
+        
+    roi = get_annualized_roi(dates, balances)
+        
+    return dates, balances, roi
