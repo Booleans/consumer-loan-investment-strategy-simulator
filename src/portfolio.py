@@ -148,7 +148,7 @@ def get_annualized_roi(dates, balances):
 def simulate_loan_investment_portfolio(all_payments, model_predictions, start_date, end_date, starting_balance, investment_per_loan, min_roi):
     # To speed up the simulation we can look at just the payments from loans matching our minimum ROI criteria. 
     loans_meeting_min_roi = model_predictions.loc[model_predictions['predicted_roi'] >= min_roi, 'id']
-    payments_filtered = all_payments.loc[payments.index.get_level_values(1).isin(loans_meeting_min_roi), ['RECEIVED_AMT_INVESTORS', 'PBAL_END_PERIOD_INVESTORS', 'IssuedDate']]
+    payments_filtered = all_payments.loc[all_payments.index.get_level_values(1).isin(loans_meeting_min_roi), ['RECEIVED_AMT_INVESTORS', 'PBAL_END_PERIOD_INVESTORS', 'IssuedDate']]
     
     dates = []
     balances = []
